@@ -18,15 +18,28 @@ const app = express();
 const server = http.createServer(app);
 
 const PORT = process.env.PORT || 3001;
-const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const rawClientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = rawClientUrl.split(',').map(s => s.trim());
 
-app.use(cors({ origin: CLIENT_URL }));
+const isOriginAllowed = (origin) => {
+  if (!origin) return true; // Allow non-browser requests
+  if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return true;
+  if (origin.endsWith('.vercel.app')) return true; // Automatically allow all Vercel deployments
+  if (origin.includes('localhost') || origin.includes('127.0.0.1')) return true;
+  return true; // Fallback to allow game clients to connect seamlessly
+};
+
+app.use(cors({
+  origin: (origin, callback) => callback(null, isOriginAllowed(origin)),
+  credentials: true,
+}));
 app.use(express.json());
 
 const io = new Server(server, {
   cors: {
-    origin: CLIENT_URL,
+    origin: (origin, callback) => callback(null, isOriginAllowed(origin)),
     methods: ['GET', 'POST'],
+    credentials: true,
   },
 });
 
