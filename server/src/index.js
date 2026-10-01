@@ -18,8 +18,8 @@ const app = express();
 const server = http.createServer(app);
 
 const PORT = process.env.PORT || 3001;
-const rawClientUrl = process.env.CLIENT_URL || 'http://localhost:5173';
-const allowedOrigins = rawClientUrl.split(',').map(s => s.trim());
+const CLIENT_URL = process.env.CLIENT_URL || 'http://localhost:5173';
+const allowedOrigins = CLIENT_URL.split(',').map(s => s.trim());
 
 const isOriginAllowed = (origin) => {
   if (!origin) return true; // Allow non-browser requests
@@ -638,7 +638,7 @@ io.on('connection', (socket) => {
   });
 });
 
-server.listen(PORT, () => {
+server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🎲 Tambola Server running on port ${PORT}`);
   console.log(`   Accepting connections from: ${CLIENT_URL}\n`);
 });
